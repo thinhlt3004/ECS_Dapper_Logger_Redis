@@ -5,6 +5,7 @@ using ECS_Dapper_Logger_Redis.Services.Implements;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc;
@@ -17,6 +18,7 @@ using Microsoft.OpenApi.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -104,6 +106,12 @@ namespace ECS_Dapper_Logger_Redis
             services.Configure<MailSettings>(mailsettings);
 
             services.AddTransient<IEmailSender, MailServices>();
+            //Install Microsoft.AspNetCore.HttpOverrides
+            //GET X-Forward IPAddress Of Client
+            services.Configure<ForwardedHeadersOptions>(options =>
+            {
+                options.KnownProxies.Add(IPAddress.Parse("Your IP Address"));
+            });
 
 
             services.AddSwaggerGen(c =>
@@ -121,6 +129,13 @@ namespace ECS_Dapper_Logger_Redis
                 app.UseSwagger();
                 app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "ECS_Dapper_Logger_Redis v1"));
             }
+
+
+            //GET X-Forward IPAddress Of Client
+            app.UseForwardedHeaders(new ForwardedHeadersOptions
+            {
+                ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
+            });
 
             app.UseHttpsRedirection();
 

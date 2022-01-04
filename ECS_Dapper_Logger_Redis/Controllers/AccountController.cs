@@ -9,6 +9,8 @@ using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
+using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -107,6 +109,23 @@ namespace ECS_Dapper_Logger_Redis.Controllers
                 return Ok();
             }
             return BadRequest("Something went wrong...");
+        }
+
+        [HttpGet("IpAdress-Client")]
+        public ActionResult GetIpAddress()
+        {
+            string ipAddress = string.Empty;
+
+            IPAddress ip = Request.HttpContext.Connection.RemoteIpAddress;
+            if(ip != null)
+            {
+                if(ip.AddressFamily == AddressFamily.InterNetworkV6)
+                {
+                    ip = Dns.GetHostEntry(ip).AddressList.First(x => x.AddressFamily == AddressFamily.InterNetwork);
+                }
+                ipAddress = ip.ToString();
+            }
+            return Ok(ipAddress);
         }
     }
 }
