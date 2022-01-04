@@ -1,6 +1,6 @@
 # ECS_Dapper_Logger_Redis
 
-Tech : 
+- Tech : 
 
 Redis Distributed-Cache,
 
@@ -12,7 +12,7 @@ SQL Server
 
 
 
-Installing Guide: 
+- Installing Guide: 
 
 Step 1 : Clone Project 
 
