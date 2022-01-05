@@ -1,4 +1,5 @@
 using ECS_Dapper_Logger_Redis.DAL;
+using ECS_Dapper_Logger_Redis.Models;
 using ECS_Dapper_Logger_Redis.Repositories.Implements;
 using ECS_Dapper_Logger_Redis.Repositories.Interfaces;
 using ECS_Dapper_Logger_Redis.Services.Implements;
@@ -7,6 +8,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.HttpsPolicy;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
@@ -21,6 +23,7 @@ using System.Linq;
 using System.Net;
 using System.Text;
 using System.Threading.Tasks;
+using Wkhtmltopdf.NetCore;
 
 namespace ECS_Dapper_Logger_Redis
 {
@@ -38,6 +41,8 @@ namespace ECS_Dapper_Logger_Redis
         {
 
             services.AddControllers();
+
+            services.AddWkhtmltopdf("wkhtmltopdf");
 
             //Add Dependency Injection for Repositories
             services.AddScoped<ICustomerRepo, CustomerRepo>();
@@ -73,6 +78,7 @@ namespace ECS_Dapper_Logger_Redis
                     .AllowAnyMethod()
                     .AllowAnyHeader());
             });
+
 
             //Add authentication
             services.AddAuthentication(x =>

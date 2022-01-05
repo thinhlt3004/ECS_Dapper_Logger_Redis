@@ -9,7 +9,7 @@ namespace ECS_Dapper_Logger_Redis.Repositories.Interfaces
 {
     public interface IAccountRepo
     {
-        Task<List<Account>> GetAll();
+        Task<List<Account>> GetAll(int pages);
 
         Task<Account> GetByID(string id);
 

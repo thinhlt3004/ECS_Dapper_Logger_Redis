@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using ECS_Dapper_Logger_Redis.DTOs.Account;
+using ECS_Dapper_Logger_Redis.Models;
 using ECS_Dapper_Logger_Redis.Repositories.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -34,10 +35,10 @@ namespace ECS_Dapper_Logger_Redis.Controllers
         }
 
         [Authorize(Roles = "Admin, Employee")]
-        [HttpGet]
-        public async Task<ActionResult> GetAll()
+        [HttpGet("pages/{pages}")]
+        public async Task<ActionResult> GetAll(int pages)
         {
-            return Ok(_mapper.Map<List<AccountReadDTO>>(await _accRepo.GetAll()));
+            return Ok(_mapper.Map<List<AccountReadDTO>>(await _accRepo.GetAll(pages)));
         }
 
         [Authorize(Roles = "Admin, Employee")]
@@ -46,6 +47,7 @@ namespace ECS_Dapper_Logger_Redis.Controllers
         {
             return Ok(_mapper.Map<AccountReadDTO>(await _accRepo.GetByID(id)));
         }
+
 
         [HttpPost("sign-in")]
         public async Task<ActionResult<AccountCBDTO>> SignIn(AccountLogin sa)

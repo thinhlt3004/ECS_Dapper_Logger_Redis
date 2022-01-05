@@ -61,13 +61,13 @@ namespace ECS_Dapper_Logger_Redis.Repositories.Implements
             }
         }
 
-        public async Task<Report> GetById(int id)
+        public async Task<List<Report>> GetById(int id)
         {
             using (IDbConnection dbCon = _dbCtx)
             {
-                var query = @"SELECT * FROM Report WHERE Id = @id";
+                var query = @"SELECT * FROM Report WHERE ServiceOfCus = @id";
                 dbCon.Open();
-                return await dbCon.QuerySingleOrDefaultAsync<Report>(query, new
+                return (List<Report>)await dbCon.QueryAsync<Report>(query, new
                 {
                     id = id
                 });

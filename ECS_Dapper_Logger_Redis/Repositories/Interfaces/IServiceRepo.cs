@@ -8,7 +8,7 @@ namespace ECS_Dapper_Logger_Redis.Repositories.Interfaces
 {
     public interface IServiceRepo
     {
-        Task<List<Service>> GetAll();
+        Task<List<Service>> GetAll(int pages);
 
         Task<Service> GetByID(string id);
 

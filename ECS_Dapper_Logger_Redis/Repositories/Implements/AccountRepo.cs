@@ -11,6 +11,9 @@ using System.Threading.Tasks;
 using Dapper.Contrib.Extensions;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using ECS_Dapper_Logger_Redis.DTOs.MailTemplate;
+using Microsoft.Extensions.Caching.Distributed;
+using System.Text;
+using Newtonsoft.Json;
 
 namespace ECS_Dapper_Logger_Redis.Repositories.Implements
 {
@@ -18,19 +21,38 @@ namespace ECS_Dapper_Logger_Redis.Repositories.Implements
     {
         private readonly IDbConnection _dbCtx;
         private readonly IEmailSender _emailSender;
-        public AccountRepo(Connection dbCtx, IEmailSender emailSender)
+        private readonly IDistributedCache _distributedCache;
+        public AccountRepo(Connection dbCtx, IEmailSender emailSender, IDistributedCache distributedCache)
         {
             _dbCtx = dbCtx.ConnectionDB;
             _emailSender = emailSender;
+            _distributedCache = distributedCache;
         }
 
-        public async Task<List<Account>> GetAll()
+        public async Task<List<Account>> GetAll(int pages)
         {
+            var getAccounts = await _distributedCache.GetAsync($"get-all-account/{pages}");
+            if(getAccounts != null)
+            {
+                var stringAccounts = Encoding.UTF8.GetString(getAccounts);
+                var accountRes = JsonConvert.DeserializeObject<List<Account>>(stringAccounts);
+                return accountRes;
+            }
             using (IDbConnection dbCon = _dbCtx)
             {
-                string query = @"SELECT * FROM Account";
+                int prevPage = pages - 1;
+                int totalPrev = prevPage * 2;
+                string query = @"SELECT * FROM Account ORDER BY EmployeeId ASC OFFSET (@totalPrev) ROWS FETCH NEXT (2) ROWS ONLY";
                 dbCon.Open();
-                return (List<Account>)await dbCon.QueryAsync<Account>(query);
+                var accountList = (List<Account>)await dbCon.QueryAsync<Account>(query, new
+                {
+                    totalPrev = totalPrev
+                });
+                var option = new DistributedCacheEntryOptions().SetAbsoluteExpiration(DateTime.Now.AddMinutes(5));
+                var serializeAccount = JsonConvert.SerializeObject(accountList);
+                var byteAccounts = Encoding.UTF8.GetBytes(serializeAccount);
+                await  _distributedCache.SetAsync($"get-all-account/{pages}", byteAccounts, option);
+                return accountList;
             }
         }
 

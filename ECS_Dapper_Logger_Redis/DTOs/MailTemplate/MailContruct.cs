@@ -16,7 +16,7 @@ namespace ECS_Dapper_Logger_Redis.DTOs.MailTemplate
         public string GetTemplate()
         {
             string url = @"http://localhost:3000/confirm-account/" + Token;
-            return $"<h1>Dear Mr/Mrs {Fullname}</h1> " +
+            return $"<h1 style='text-align:center'>Dear Mr/Mrs {Fullname}</h1> " +
                 $"<p>We registed your account. Please confirm it</p>" +
                 $"<p>Your Email : {Email}</p>" +
                 $"<p>Your Password : {Password}</p>" +

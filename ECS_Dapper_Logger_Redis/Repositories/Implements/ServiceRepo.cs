@@ -2,10 +2,13 @@
 using ECS_Dapper_Logger_Redis.DAL;
 using ECS_Dapper_Logger_Redis.Models;
 using ECS_Dapper_Logger_Redis.Repositories.Interfaces;
+using Microsoft.Extensions.Caching.Distributed;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace ECS_Dapper_Logger_Redis.Repositories.Implements
@@ -13,10 +16,11 @@ namespace ECS_Dapper_Logger_Redis.Repositories.Implements
     public class ServiceRepo : IServiceRepo
     {
         private readonly IDbConnection _dbCtx;
-
-        public ServiceRepo(Connection dbCtx)
+        private readonly IDistributedCache _distributedCache;
+        public ServiceRepo(Connection dbCtx, IDistributedCache distributedCache)
         {
             _dbCtx = dbCtx.ConnectionDB;
+            _distributedCache = distributedCache;
         }
 
         public async Task<bool> Create(Service s)
@@ -33,8 +37,7 @@ namespace ECS_Dapper_Logger_Redis.Repositories.Implements
                     Price = s.Price,
                     ServiceCategoryId = s.ServiceCategoryId,
                     Image = s.Image
-                });
-
+                });              
                 return result > 0;
             }
         }
@@ -50,14 +53,31 @@ namespace ECS_Dapper_Logger_Redis.Repositories.Implements
             }
         }
 
-        public async Task<List<Service>> GetAll()
+        public async Task<List<Service>> GetAll(int pages)
         {
+            var getServices = await _distributedCache.GetAsync($"get-all-service/{pages}");
+            if(getServices != null)
+            {
+                var stringServices = Encoding.UTF8.GetString(getServices);
+                var servicesRes = JsonConvert.DeserializeObject<List<Service>>(stringServices);
+                return servicesRes;
+            }
             using (IDbConnection dbCon = _dbCtx)
             {
-                var query = @"SELECT * FROM Services";
+                int prevRow = pages - 1;
+                var totalPrev = prevRow * 2;
+                var query = @"SELECT * FROM Services ORDER BY Id ASC OFFSET (@totalPrev) ROWS FETCH NEXT (2) ROWS ONLY";
                 dbCon.Open();
-                return (List<Service>)await dbCon.QueryAsync<Service>(query);
+                var serviceList = (List<Service>)await dbCon.QueryAsync<Service>(query, new 
+                {
+                   totalPrev = totalPrev,
+                });
 
+                var option = new DistributedCacheEntryOptions().SetAbsoluteExpiration(DateTime.Now.AddMinutes(5));
+                var serializeServices = JsonConvert.SerializeObject(serviceList);
+                var byteServices = Encoding.UTF8.GetBytes(serializeServices);
+                await _distributedCache.SetAsync($"get-all-service/{pages}" ,byteServices, option);
+                return serviceList;
             }
         }
 

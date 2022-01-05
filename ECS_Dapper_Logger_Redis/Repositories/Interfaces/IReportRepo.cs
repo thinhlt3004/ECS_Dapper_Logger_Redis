@@ -10,7 +10,7 @@ namespace ECS_Dapper_Logger_Redis.Repositories.Interfaces
     {
         Task<List<Report>> GetAll();
 
-        Task<Report> GetById(int id);
+        Task<List<Report>> GetById(int id);
 
         Task<bool> Create(Report r);
 

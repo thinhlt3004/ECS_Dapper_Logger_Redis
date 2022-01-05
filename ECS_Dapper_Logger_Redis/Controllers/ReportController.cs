@@ -8,6 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Wkhtmltopdf.NetCore;
 
 namespace ECS_Dapper_Logger_Redis.Controllers
 {
@@ -17,11 +18,13 @@ namespace ECS_Dapper_Logger_Redis.Controllers
     {
         private readonly IReportRepo _rRepo;
         private readonly IMapper _mapper;
+        private readonly IGeneratePdf _generatedPdf;
 
-        public ReportController(IReportRepo rRepo, IMapper mapper)
+        public ReportController(IReportRepo rRepo, IMapper mapper, IGeneratePdf generatedPdf)
         {
             _rRepo = rRepo;
             _mapper = mapper;
+            _generatedPdf = generatedPdf;
         }
 
         [HttpGet]
@@ -31,10 +34,18 @@ namespace ECS_Dapper_Logger_Redis.Controllers
         }
 
         [HttpGet("{id}")]
-        public async Task<ActionResult<ReportReadDTO>> GetByID(int id)
+        public async Task<ActionResult<List<ReportReadDTO>>> GetByID(int id)
         {
-            return Ok(_mapper.Map<ReportReadDTO>(await _rRepo.GetById(id)));
+            return Ok(_mapper.Map<List<ReportReadDTO>>(await _rRepo.GetById(id)));
         }
+
+        [HttpGet("get-report-pdf/{id}")]
+        public async Task<IActionResult> GetReportPDF(int id)
+        {
+            var result = _mapper.Map<List<ReportReadDTO>>(await _rRepo.GetById(id));
+            return await _generatedPdf.GetPdf("Views/Report/ReportDetails.cshtml", result);
+        }
+
 
         [HttpPost]
         public async Task<ActionResult> Create(ReportCreateDTO r)

@@ -26,10 +26,10 @@ namespace ECS_Dapper_Logger_Redis.Controllers
             _mapper = mapper;
         }
 
-        [HttpGet]
-        public async Task<ActionResult<List<ServiceReadDTO>>> GetAll()
+        [HttpGet("pages/{pages}")]
+        public async Task<ActionResult<List<ServiceReadDTO>>> GetAll(int pages)
         {
-            return Ok(_mapper.Map<List<ServiceReadDTO>>(await _serviceRepo.GetAll()));
+            return Ok(_mapper.Map<List<ServiceReadDTO>>(await _serviceRepo.GetAll(pages)));
         }
 
         [HttpGet("{id}")]
