@@ -3,6 +3,7 @@ using ECS_Dapper_Logger_Redis.DTOs.Account;
 using ECS_Dapper_Logger_Redis.Models;
 using ECS_Dapper_Logger_Redis.Repositories.Interfaces;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Distributed;
@@ -17,6 +18,7 @@ using System.Threading.Tasks;
 
 namespace ECS_Dapper_Logger_Redis.Controllers
 {
+    //[EnableCors("AllowOrigin")]
     [Route("api/[controller]")]
     [ApiController]
     public class AccountController : ControllerBase
@@ -33,7 +35,7 @@ namespace ECS_Dapper_Logger_Redis.Controllers
             _tokenService = tokenService;
             _mapper = mapper;
         }
-
+        //[DisableCors]
         [Authorize(Roles = "Admin, Employee")]
         [HttpGet("pages/{pages}")]
         public async Task<ActionResult> GetAll(int pages)
@@ -129,5 +131,6 @@ namespace ECS_Dapper_Logger_Redis.Controllers
             }
             return Ok(ipAddress);
         }
+
     }
 }

@@ -75,14 +75,29 @@ namespace ECS_Dapper_Logger_Redis
             services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
             //Add Cors
-            services.AddCors(c =>
+            //Solution 1: 
+            //services.AddCors(options =>
+            //{
+            //    options.AddPolicy("AllowOrigin",
+            //        builder => builder
+            //        .AllowAnyOrigin()
+            //        .AllowAnyMethod()
+            //        .AllowAnyHeader());
+            //});
+            //Solution 2:
+            services.AddCors(options =>
             {
-                c.AddPolicy("AllowOrigin",
-                    options => options
-                    .AllowAnyOrigin()
-                    .AllowAnyMethod()
-                    .AllowAnyHeader());
+                options.AddPolicy("AllowOrigin", builder =>
+                {
+                    builder.WithOrigins("http://localhost:3000");
+                });
             });
+
+
+            //Solution 3
+            //services.AddCors(options => options.AddDefaultPolicy(builder => builder.WithOrigins("http://localhost:3000")));
+
+
 
 
             //Add authentication
@@ -152,7 +167,7 @@ namespace ECS_Dapper_Logger_Redis
 
             app.UseRouting();
 
-            app.UseCors();
+            app.UseCors("AllowOrigin");
 
             app.UseAuthentication();
 
