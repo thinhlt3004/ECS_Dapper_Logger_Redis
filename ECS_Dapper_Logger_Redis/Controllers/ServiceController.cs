@@ -3,6 +3,7 @@ using ECS_Dapper_Logger_Redis.DTOs.Account;
 using ECS_Dapper_Logger_Redis.DTOs.Service;
 using ECS_Dapper_Logger_Redis.Models;
 using ECS_Dapper_Logger_Redis.Repositories.Interfaces;
+using ECS_Dapper_Logger_Redis.Services.Interfaces;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System;
@@ -18,17 +19,19 @@ namespace ECS_Dapper_Logger_Redis.Controllers
     {
         private readonly IServiceRepo _serviceRepo;
         private readonly IMapper _mapper;
+        private readonly ILoggerManager _logger;
 
-
-        public ServiceController(IServiceRepo serviceRepo, IMapper mapper)
+        public ServiceController(IServiceRepo serviceRepo, IMapper mapper, ILoggerManager logger)
         {
             _serviceRepo = serviceRepo;
             _mapper = mapper;
+            _logger = logger;
         }
 
         [HttpGet("pages/{pages}")]
         public async Task<ActionResult<List<ServiceReadDTO>>> GetAll(int pages)
         {
+            _logger.LogInfo("Get All Services");
             return Ok(_mapper.Map<List<ServiceReadDTO>>(await _serviceRepo.GetAll(pages)));
         }
 
